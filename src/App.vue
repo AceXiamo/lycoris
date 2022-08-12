@@ -1,31 +1,57 @@
 <script setup lang="ts">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="container">
+    <div class="scroll">
+      <router-view class="router"/>
+    </div>
+    <div class="menu">
+    </div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+<style scoped lang="scss">
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+
+  .scroll {
+    width: calc(100vw - 95px);
+    overflow: auto;
+    position: relative;
+    left: 10px;
+
+    &::-webkit-scrollbar {
+      width: 5px;
+      height: 1px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background-color: #f0555a;
+    }
+
+    &::-webkit-scrollbar-track {
+      border-radius: 10px;
+    }
+  }
+
+  .router {
+
+  }
+
+  .menu {
+    width: 80px;
+    background-color: #f0555a;
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
 }
 </style>
