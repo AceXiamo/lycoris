@@ -4,6 +4,22 @@ import {onMounted, ref} from 'vue'
 defineProps<{ msg: string }>()
 let coverIndex = ref<number>(0)
 
+let dotOpacity = ref<number>(0)
+const mouseHandle = (dom: any) => {
+  let res = {x: 0, y: 0, leave: true}
+  dom.onmousemove = (e: any) => {
+    res.x = e.layerX
+    res.y = e.layerY
+  }
+  dom.onmouseenter = (e: any) => {
+    res.leave = false
+  }
+  dom.onmouseleave = (e: any) => {
+    res.leave = true
+  }
+  return res
+}
+
 onMounted(() => {
   setInterval(() => {
     let index = coverIndex.value
@@ -21,32 +37,45 @@ onMounted(() => {
 })
 let carouselIndex = ref<number>(0)
 
+window.onload = () => {
+  let newsContainer: any = document.querySelector('#list-container')
+  let newsCanvas: any = document.querySelector('#news-canvas')
+  newsCanvas.width = newsContainer.offsetWidth
+  newsCanvas.height = newsContainer.offsetHeight
+  let mouse = mouseHandle(newsContainer)
+  let ctx = newsCanvas.getContext('2d')
+  ctx.save()
+
+  let easing = 0.05;
+  let last = {x: 0, y: 0, r: 0};
+  (async function handle() {
+    window.requestAnimationFrame(handle)
+    ctx.clearRect(0, 0, newsCanvas.width, newsCanvas.height)
+    ctx.save()
+    let x = (mouse.x - last.x) * easing
+    let y = (mouse.y - last.y) * easing
+    last.x += x
+    last.y += y
+    if (mouse.leave) {
+      let vR = (0 - last.r) * easing
+      last.r += vR
+    } else {
+      let vR = (25 - last.r) * easing
+      last.r += vR
+    }
+    ctx.fillStyle = "rgba(255,243,181,.7)"
+    ctx.translate(last.x, last.y)
+    ctx.beginPath()
+    ctx.arc(0, 0, last.r, 0, 360 * Math.PI / 180, false)
+    ctx.closePath()
+    ctx.fill()
+    ctx.restore()
+  })()
+}
+
 const open = (url: string) => {
   window.open(url, '_blank')
 }
-
-let divElement = document.createElement('div')
-divElement.className = 'mouse'
-divElement.style.height = '60px'
-divElement.style.width = '60px'
-divElement.style.transform = 'translateX(-50%) translateY(-50%)'
-divElement.style.borderRadius = '100%'
-divElement.style.backgroundColor = 'rgba(255,243,181,.7)'
-divElement.style.position = 'fixed'
-divElement.style.pointerEvents = 'none'
-
-const newsAni2 = async (e: any) => {
-  await sleep(120)
-  let mouse = document.querySelector('.mouse')
-  if (mouse) mouse.remove()
-  divElement.style.top = e.pageY + 'px'
-  divElement.style.left = e.pageX + 'px'
-  divElement.style.opacity = dotOpacity.value + ''
-  let news = document.querySelector('#news-container')
-  if (news) news.prepend(divElement)
-}
-
-let dotOpacity = ref<number>(1)
 
 const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -147,22 +176,25 @@ const sleep = (ms: number) => {
     <div class="title">
       <img src="../assets/image/ttl_news.png" alt=""/>
     </div>
-    <div id="news-container" @mousemove="newsAni2" @mouseleave="dotOpacity = 0" @mouseenter="dotOpacity = 1">
-      <div class="news-content">
-        <span>2022.08.12</span>
-        <span>OnAir</span>
-        <span>第7話 放送時間変更（ABCテレビ、メ～テレ）</span>
-      </div>
-      <div class="news-content">
-        <span>2022.08.11</span>
-        <span>Info</span>
-        <span>#07「Time will tell」予告動画 公開！</span>
-      </div>
-      <div class="news-content">
-        <span>2022.08.11</span>
-        <span>Info</span>
-        <span>公式Twitterフォロワー200,000人突破記念プレゼント</span>
-      </div>
+    <div id="news-container">
+      <view id="list-container">
+        <div class="news-content">
+          <span>2022.08.12</span>
+          <span>OnAir</span>
+          <span>第7話 放送時間変更（ABCテレビ、メ～テレ）</span>
+        </div>
+        <div class="news-content">
+          <span>2022.08.11</span>
+          <span>Info</span>
+          <span>#07「Time will tell」予告動画 公開！</span>
+        </div>
+        <div class="news-content">
+          <span>2022.08.11</span>
+          <span>Info</span>
+          <span>公式Twitterフォロワー200,000人突破記念プレゼント</span>
+        </div>
+      </view>
+      <canvas id="news-canvas"></canvas>
     </div>
   </div>
   <div class="video"></div>
@@ -258,6 +290,7 @@ const sleep = (ms: number) => {
             width: 100%;
             position: absolute;
             top: 0;
+            display: flex;
 
             img {
               width: 100%;
@@ -353,6 +386,8 @@ const sleep = (ms: number) => {
 
           img {
             width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
 
           img:first-child {
@@ -436,7 +471,18 @@ const sleep = (ms: number) => {
   > #news-container {
     position: relative;
 
-    > .news-content {
+    #list-container {
+      height: auto;
+    }
+
+    #news-canvas {
+      position: absolute;
+      top: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .news-content {
       padding: 31px 0;
       border-top: 1px solid #ccc;
 
